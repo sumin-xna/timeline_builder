@@ -16,12 +16,13 @@
       --danger: #dc2626;
       --shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
       --radius: 14px;
-      --label-col: 220px;
-      --axis-col-width: 84px;
-      --row-height: 68px;
+      --label-col: 240px;
+      --axis-col-width: 96px;
+      --row-height: 122px;
     }
 
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -30,7 +31,7 @@
     }
 
     .wrap {
-      max-width: 1600px;
+      max-width: 1700px;
       margin: 0 auto;
       padding: 24px;
     }
@@ -257,7 +258,7 @@
     }
 
     .timeline-inner {
-      min-width: 900px;
+      min-width: 1000px;
     }
 
     .axis-row {
@@ -308,26 +309,30 @@
       min-height: var(--row-height);
       border-bottom: 1px solid var(--line);
       background: white;
+      break-inside: avoid;
+      page-break-inside: avoid;
     }
 
     .row-label {
-      padding: 12px 14px;
+      padding: 14px 14px;
       border-right: 1px solid var(--line);
       background: #fcfdff;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 4px;
+      gap: 6px;
     }
 
     .row-label .name {
       font-weight: 700;
       font-size: 0.95rem;
+      line-height: 1.25;
     }
 
     .row-label .meta {
       color: var(--muted);
       font-size: 0.83rem;
+      line-height: 1.3;
     }
 
     .row-track {
@@ -339,10 +344,10 @@
 
     .task-bar {
       position: absolute;
-      top: 10px;
-      height: calc(var(--row-height) - 20px);
-      border-radius: 12px;
-      padding: 10px 12px;
+      top: 8px;
+      min-height: calc(var(--row-height) - 16px);
+      border-radius: 14px;
+      padding: 12px 14px;
       overflow: hidden;
       border: 1px solid rgba(37, 99, 235, 0.16);
       background: linear-gradient(135deg, #3b82f6, #1d4ed8);
@@ -350,32 +355,37 @@
       box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22);
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      gap: 4px;
+      justify-content: flex-start;
+      gap: 6px;
     }
 
     .task-bar.milestone {
       background: linear-gradient(135deg, #0f766e, #0d9488);
       border-color: rgba(13, 148, 136, 0.18);
-      min-width: 48px;
+      min-width: 150px;
     }
 
     .task-title {
       font-weight: 800;
-      font-size: 0.9rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-size: 0.95rem;
+      line-height: 1.25;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
 
     .task-meta,
     .task-note {
-      font-size: 0.76rem;
-      line-height: 1.2;
+      font-size: 0.8rem;
+      line-height: 1.32;
+      opacity: 0.98;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .task-note {
       opacity: 0.95;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
 
     .empty-state {
@@ -390,6 +400,75 @@
       font-size: 0.85rem;
     }
 
+    .print-only {
+      display: none;
+    }
+
+    .print-list-section {
+      page-break-before: always;
+      break-before: page;
+      padding-top: 12px;
+    }
+
+    .print-list-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      margin-bottom: 14px;
+    }
+
+    .print-list-subtitle {
+      color: var(--muted);
+      margin-bottom: 16px;
+      font-size: 0.95rem;
+    }
+
+    .print-item {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      background: white;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .print-item-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .print-item-name {
+      font-weight: 800;
+      font-size: 1rem;
+      line-height: 1.3;
+    }
+
+    .print-item-type {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #1d4ed8;
+      background: #dbeafe;
+      border-radius: 999px;
+      padding: 4px 10px;
+      white-space: nowrap;
+    }
+
+    .print-item-grid {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 6px 14px;
+      font-size: 0.92rem;
+      line-height: 1.4;
+    }
+
+    .print-item-grid .label {
+      color: var(--muted);
+      font-weight: 700;
+    }
+
     @media (max-width: 1100px) {
       .layout {
         grid-template-columns: 1fr;
@@ -401,17 +480,18 @@
     }
 
     @media print {
+      @page {
+        size: landscape;
+        margin: 0.45in;
+      }
+
       body {
         background: white;
       }
 
       .topbar,
       .form-panel,
-      .table-panel .section-title,
-      .table-panel .summary,
-      .table-actions,
-      .list-tools,
-      .data-box,
+      .table-panel,
       .footer-note {
         display: none !important;
       }
@@ -429,6 +509,13 @@
         padding: 0;
         border: none;
         box-shadow: none;
+        background: white;
+      }
+
+      .timeline-panel > .section-title {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 1.1rem;
       }
 
       .timeline-shell {
@@ -436,8 +523,71 @@
         border: none;
       }
 
+      .timeline-inner {
+        min-width: 0;
+        width: 100%;
+      }
+
       .axis-row {
         position: static;
+      }
+
+      .axis-cell {
+        min-width: 0;
+        padding: 8px 4px 10px;
+        font-size: 0.68rem;
+      }
+
+      .axis-cell strong {
+        font-size: 0.72rem;
+      }
+
+      .row-label {
+        padding: 10px 10px;
+      }
+
+      .row-label .name {
+        font-size: 0.82rem;
+      }
+
+      .row-label .meta {
+        font-size: 0.72rem;
+      }
+
+      .timeline-row {
+        min-height: 112px;
+      }
+
+      .row-track {
+        min-height: 112px;
+        background-size: auto 100%;
+      }
+
+      .task-bar {
+        min-height: 96px;
+        height: auto;
+        top: 8px;
+        padding: 10px 12px;
+        overflow: hidden;
+      }
+
+      .task-bar.milestone {
+        min-width: 120px;
+      }
+
+      .task-title {
+        font-size: 0.78rem;
+        line-height: 1.2;
+      }
+
+      .task-meta,
+      .task-note {
+        font-size: 0.68rem;
+        line-height: 1.22;
+      }
+
+      .print-only {
+        display: block !important;
       }
     }
   </style>
@@ -447,7 +597,7 @@
     <div class="topbar">
       <div class="title-block">
         <h1 id="timelineTitle">Project Timeline</h1>
-        <div class="subtitle">Add tasks or milestones with start date, duration, owner, and notes. The timeline widths scale to actual duration.</div>
+        <div class="subtitle">Add tasks or milestones with start date, duration, owner, and notes. Bars scale to actual duration and print cleanly to PDF.</div>
       </div>
       <div class="controls">
         <button onclick="seedDemo()">Load Demo</button>
@@ -512,9 +662,9 @@
 
         <div class="hint">
           Notes:
-          <br />• Duration is shown proportionally on the timeline.
-          <br />• Milestones are treated as 1-day events unless you set a longer duration.
-          <br />• End date is calculated as start date + duration - 1 day.
+          <br />• Bars are taller so the text fits inside.
+          <br />• Full start and end dates are included inside each bar for PDF output.
+          <br />• Printing creates a second page with a full item list.
         </div>
 
         <div class="data-box">
@@ -541,9 +691,11 @@
             <div class="timeline-inner" id="timelineWrap"></div>
           </div>
           <div class="footer-note">
-            The date header and task bars use the same underlying scale, so start and end positions line up exactly.
+            The printed PDF includes this timeline on the first page and a separate detailed item list on the next page.
           </div>
         </div>
+
+        <div class="print-only print-list-section" id="printListSection"></div>
       </div>
     </div>
   </div>
@@ -566,7 +718,8 @@
       timelineWrap: document.getElementById("timelineWrap"),
       saveBtn: document.getElementById("saveBtn"),
       cancelEditBtn: document.getElementById("cancelEditBtn"),
-      importBox: document.getElementById("importBox")
+      importBox: document.getElementById("importBox"),
+      printListSection: document.getElementById("printListSection")
     };
 
     function uid() {
@@ -726,13 +879,13 @@
     }
 
     function persist() {
-      localStorage.setItem("timelineItemsV2", JSON.stringify(items));
+      localStorage.setItem("timelineItemsV3", JSON.stringify(items));
       localStorage.setItem("timelineProjectName", getProjectName());
     }
 
     function loadPersisted() {
       try {
-        const stored = JSON.parse(localStorage.getItem("timelineItemsV2") || "[]");
+        const stored = JSON.parse(localStorage.getItem("timelineItemsV3") || localStorage.getItem("timelineItemsV2") || "[]");
         if (Array.isArray(stored)) items = stored;
       } catch (_) {
         items = [];
@@ -914,6 +1067,7 @@
     function renderTimeline(normItems) {
       if (!normItems.length) {
         els.timelineWrap.innerHTML = `<div class="empty-state">No timeline to display yet.</div>`;
+        els.printListSection.innerHTML = "";
         return;
       }
 
@@ -942,7 +1096,8 @@
         const startOffset = diffDays(minStart, item.start);
         const leftPercent = (startOffset / totalDays) * 100;
         const widthPercent = (item.duration / totalDays) * 100;
-        const safeWidth = clamp(widthPercent, 4, 100);
+        const minimumPercent = item.type === "milestone" ? 10 : 16;
+        const safeWidth = clamp(widthPercent, minimumPercent, 100);
         const cls = item.type === "milestone" ? "task-bar milestone" : "task-bar";
 
         return `
@@ -960,10 +1115,11 @@
                 title="${escapeHtml(item.name)} | ${formatDate(item.start)} to ${formatDate(item.end)} | ${escapeHtml(item.owner || "No owner")} | ${escapeHtml(item.notes || "")}"
               >
                 <div class="task-title">${escapeHtml(item.name)}</div>
-                <div class="task-meta">
-                  ${escapeHtml(formatShort(item.start))} → ${escapeHtml(formatShort(item.end))} • ${escapeHtml(item.owner || "No owner")}
-                </div>
-                <div class="task-note">${escapeHtml(item.notes || "")}</div>
+                <div class="task-meta"><strong>Owner:</strong> ${escapeHtml(item.owner || "No owner")}</div>
+                <div class="task-meta"><strong>Start:</strong> ${escapeHtml(formatDate(item.start))}</div>
+                <div class="task-meta"><strong>End:</strong> ${escapeHtml(formatDate(item.end))}</div>
+                <div class="task-meta"><strong>Duration:</strong> ${item.duration} day${item.duration === 1 ? "" : "s"}</div>
+                <div class="task-note"><strong>Notes:</strong> ${escapeHtml(item.notes || "—")}</div>
               </div>
             </div>
           </div>
@@ -976,6 +1132,41 @@
           <div class="axis-grid" style="${gridStyle}">${axisHtml}</div>
         </div>
         ${rowsHtml}
+      `;
+
+      renderPrintList(normItems);
+    }
+
+    function renderPrintList(normItems) {
+      const listHtml = normItems.map(item => `
+        <div class="print-item">
+          <div class="print-item-head">
+            <div class="print-item-name">${escapeHtml(item.name)}</div>
+            <div class="print-item-type">${escapeHtml(item.type)}</div>
+          </div>
+          <div class="print-item-grid">
+            <div class="label">Owner</div>
+            <div>${escapeHtml(item.owner || "—")}</div>
+
+            <div class="label">Start Date</div>
+            <div>${escapeHtml(formatDate(item.start))}</div>
+
+            <div class="label">End Date</div>
+            <div>${escapeHtml(formatDate(item.end))}</div>
+
+            <div class="label">Duration</div>
+            <div>${item.duration} day${item.duration === 1 ? "" : "s"}</div>
+
+            <div class="label">Notes</div>
+            <div>${escapeHtml(item.notes || "—")}</div>
+          </div>
+        </div>
+      `).join("");
+
+      els.printListSection.innerHTML = `
+        <div class="print-list-title">${escapeHtml(getProjectName())} — Item List</div>
+        <div class="print-list-subtitle">Detailed list of all tasks and milestones for print/PDF reference.</div>
+        ${listHtml}
       `;
     }
 
