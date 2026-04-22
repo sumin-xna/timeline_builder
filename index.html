@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Presentation Timeline Builder</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #dbe3ef;
+      --accent: #2563eb;
+      --accent-soft: #dbeafe;
+      --success: #047857;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #f8fbff 0%, #eef3fb 100%);
+      color: var(--text);
+    }
+
+    .app {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .title h1 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+      line-height: 1.1;
+    }
+
+    .title p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 760px;
+    }
+
+    .actions, .toolbar-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .panel {
+      padding: 20px;
+      position: sticky;
+      top: 18px;
+    }
+
+    .panel h2, .workspace h2 {
+      margin: 0 0 14px;
+      font-size: 1.1rem;
+    }
+
+    .group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font: inherit;
+      background: #fff;
+      color: var(--text);
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.08s ease, opacity 0.2s ease, background 0.2s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+
+    .primary { background: var(--accent); color: white; }
+    .secondary { background: #eef2ff; color: #312e81; }
+    .ghost { background: white; color: var(--text); border: 1px solid var(--border); }
+    .danger { background: #fef2f2; color: #b91c1c; }
+
+    .workspace {
+      padding: 20px;
+      overflow: hidden;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .small {
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .summary {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .pill {
+      background: var(--accent-soft);
+      color: #1d4ed8;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    .timeline-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    }
+
+    .timeline {
+      min-width: 860px;
+    }
+
+    .grid-header, .timeline-row {
+      display: grid;
+      grid-template-columns: 250px repeat(var(--cols), minmax(52px, 1fr));
+      align-items: stretch;
+    }
+
+    .grid-header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: #f8fbff;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .corner, .task-cell, .time-cell, .lane-meta, .bar-lane {
+      border-right: 1px solid #edf2f7;
+      border-bottom: 1px solid #edf2f7;
+    }
+
+    .corner {
+      padding: 14px;
+      font-weight: 700;
+      background: #f8fbff;
+    }
+
+    .time-cell {
+      padding: 10px 6px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+      min-height: 64px;
+    }
+
+    .timeline-row:last-child .lane-meta,
+    .timeline-row:last-child .bar-lane {
+      border-bottom: 0;
+    }
+
+    .lane-meta {
+      padding: 14px;
+      background: #fff;
+    }
+
+    .task-title {
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .task-meta {
+      font-size: 0.85rem;
+      color: var(--muted);
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .bar-lane {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(var(--cols), minmax(52px, 1fr));
+      min-height: 102px;
+      background-image: linear-gradient(to right, rgba(219,227,239,0.5) 1px, transparent 1px);
+      background-size: calc(100% / var(--cols)) 100%;
+    }
+
+    .grid-line {
+      min-height: 102px;
+    }
+
+    .bar {
+      position: absolute;
+      top: 18px;
+      height: 42px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      color: white;
+      font-weight: 700;
+      font-size: 0.85rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      box-shadow: 0 10px 18px rgba(37, 99, 235, 0.18);
+    }
+
+    .bar-note {
+      position: absolute;
+      top: 64px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      background: rgba(255,255,255,0.95);
+      padding: 6px 8px;
+      border-radius: 10px;
+      max-width: 95%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      border: 1px solid #e5ebf5;
+    }
+
+    .items-list {
+      margin-top: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .item {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      background: #fff;
+    }
+
+    .item-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .item-title {
+      font-weight: 700;
+    }
+
+    .item-meta {
+      font-size: 0.86rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .legend {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .empty {
+      border: 1px dashed var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      text-align: center;
+      color: var(--muted);
+      background: #fbfdff;
+    }
+
+    .hidden { display: none !important; }
+
+    .file-input { display: none; }
+
+    @media print {
+      body {
+        background: white;
+      }
+      .panel, .toolbar-actions, .actions, .items-list, .legend, .small {
+        display: none !important;
+      }
+      .layout {
+        display: block;
+      }
+      .workspace {
+        box-shadow: none;
+        border: 0;
+        padding: 0;
+      }
+      .timeline-wrap {
+        overflow: visible;
+        border: 0;
+      }
+      .timeline {
+        min-width: 0;
+      }
+    }
+
+    @media (max-width: 1080px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+      .panel {
+        position: static;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .row { grid-template-columns: 1fr; }
+      .app { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div class="title">
+        <h1>Presentation Timeline Builder</h1>
+        <p>Create a clean project timeline you can present, print to PDF, or share via GitHub Pages. Add a start date, duration, owner, and notes for each item.</p>
+      </div>
+      <div class="actions">
+        <button class="ghost" id="loadSampleBtn">Load sample</button>
+        <button class="secondary" id="exportBtn">Export JSON</button>
+        <button class="ghost" id="importBtn">Import JSON</button>
+        <button class="primary" id="printBtn">Print / Save PDF</button>
+        <input type="file" id="fileInput" class="file-input" accept="application/json" />
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="card panel">
+        <h2>Add or update timeline item</h2>
+        <div class="group">
+          <label for="projectTitle">Timeline title</label>
+          <input id="projectTitle" placeholder="Example: Q3 Product Launch Plan" />
+        </div>
+
+        <div class="group">
+          <label for="taskName">Task or milestone</label>
+          <input id="taskName" placeholder="Example: Prototype validation" />
+        </div>
+
+        <div class="row">
+          <div class="group">
+            <label for="startDate">Start date</label>
+            <input id="startDate" type="date" />
+          </div>
+          <div class="group">
+            <label for="duration">Duration</label>
+            <input id="duration" type="number" min="1" value="7" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="group">
+            <label for="durationUnit">Duration unit</label>
+            <select id="durationUnit">
+              <option value="days">Days</option>
+              <option value="weeks">Weeks</option>
+              <option value="months">Months</option>
+            </select>
+          </div>
+          <div class="group">
+            <label for="owner">Person responsible</label>
+            <input id="owner" placeholder="Example: Brandon" />
+          </div>
+        </div>
+
+        <div class="group">
+          <label for="notes">Notes</label>
+          <textarea id="notes" placeholder="Add context, dependencies, risks, or presentation notes"></textarea>
+        </div>
+
+        <div class="group">
+          <label for="color">Bar color</label>
+          <select id="color">
+            <option value="#2563eb">Blue</option>
+            <option value="#7c3aed">Purple</option>
+            <option value="#059669">Green</option>
+            <option value="#ea580c">Orange</option>
+            <option value="#dc2626">Red</option>
+            <option value="#0f766e">Teal</option>
+          </select>
+        </div>
+
+        <div class="actions">
+          <button class="primary" id="saveItemBtn">Add item</button>
+          <button class="ghost hidden" id="cancelEditBtn">Cancel edit</button>
+          <button class="danger" id="clearAllBtn">Clear all</button>
+        </div>
+        <p class="small" style="margin-top: 12px;">Tip: use Print / Save PDF for a presentation-ready handout, or publish this file to GitHub Pages for a live shareable link.</p>
+      </div>
+
+      <div class="card workspace">
+        <div class="toolbar">
+          <div>
+            <h2 id="displayTitle">Untitled Timeline</h2>
+            <div class="small">Presentation view updates automatically as you add items.</div>
+          </div>
+          <div class="toolbar-actions">
+            <button class="ghost" id="presentationModeBtn">Toggle presentation mode</button>
+          </div>
+        </div>
+
+        <div class="summary" id="summary"></div>
+
+        <div id="emptyState" class="empty">
+          Add your first timeline item on the left to generate a shareable presentation timeline.
+        </div>
+
+        <div id="timelineSection" class="hidden">
+          <div class="timeline-wrap">
+            <div id="timeline" class="timeline"></div>
+          </div>
+
+          <div class="legend" id="legend"></div>
+
+          <div class="items-list" id="itemsList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "presentation-timeline-builder-v1";
+
+    const el = {
+      projectTitle: document.getElementById("projectTitle"),
+      taskName: document.getElementById("taskName"),
+      startDate: document.getElementById("startDate"),
+      duration: document.getElementById("duration"),
+      durationUnit: document.getElementById("durationUnit"),
+      owner: document.getElementById("owner"),
+      notes: document.getElementById("notes"),
+      color: document.getElementById("color"),
+      saveItemBtn: document.getElementById("saveItemBtn"),
+      cancelEditBtn: document.getElementById("cancelEditBtn"),
+      clearAllBtn: document.getElementById("clearAllBtn"),
+      timeline: document.getElementById("timeline"),
+      displayTitle: document.getElementById("displayTitle"),
+      summary: document.getElementById("summary"),
+      emptyState: document.getElementById("emptyState"),
+      timelineSection: document.getElementById("timelineSection"),
+      itemsList: document.getElementById("itemsList"),
+      legend: document.getElementById("legend"),
+      exportBtn: document.getElementById("exportBtn"),
+      importBtn: document.getElementById("importBtn"),
+      fileInput: document.getElementById("fileInput"),
+      printBtn: document.getElementById("printBtn"),
+      loadSampleBtn: document.getElementById("loadSampleBtn"),
+      presentationModeBtn: document.getElementById("presentationModeBtn"),
+    };
+
+    let state = loadState();
+    let editingId = null;
+
+    function loadState() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (_) {}
+      }
+      return { title: "", items: [], presentationMode: false };
+    }
+
+    function persist() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function formatDate(date) {
+      return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(date);
+    }
+
+    function parseISODate(value) {
+      const [year, month, day] = value.split("-").map(Number);
+      return new Date(year, month - 1, day);
+    }
+
+    function addDuration(start, amount, unit) {
+      const end = new Date(start);
+      if (unit === "days") end.setDate(end.getDate() + amount - 1);
+      if (unit === "weeks") end.setDate(end.getDate() + amount * 7 - 1);
+      if (unit === "months") end.setMonth(end.getMonth() + amount);
+      return end;
+    }
+
+    function dayDiff(a, b) {
+      const ms = 24 * 60 * 60 * 1000;
+      const utcA = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
+      const utcB = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
+      return Math.round((utcB - utcA) / ms);
+    }
+
+    function clamp(n, min, max) {
+      return Math.max(min, Math.min(max, n));
+    }
+
+    function resetForm() {
+      editingId = null;
+      el.taskName.value = "";
+      el.startDate.value = "";
+      el.duration.value = 7;
+      el.durationUnit.value = "days";
+      el.owner.value = "";
+      el.notes.value = "";
+      el.color.value = "#2563eb";
+      el.saveItemBtn.textContent = "Add item";
+      el.cancelEditBtn.classList.add("hidden");
+    }
+
+    function validateForm() {
+      const task = el.taskName.value.trim();
+      const start = el.startDate.value;
+      const duration = Number(el.duration.value);
+      const owner = el.owner.value.trim();
+
+      if (!task || !start || !duration || duration < 1 || !owner) {
+        alert("Please fill in task, start date, duration, and person responsible.");
+        return null;
+      }
+
+      return {
+        task,
+        startDate: start,
+        duration,
+        durationUnit: el.durationUnit.value,
+        owner,
+        notes: el.notes.value.trim(),
+        color: el.color.value,
+      };
+    }
+
+    function saveItem() {
+      state.title = el.projectTitle.value.trim();
+      const payload = validateForm();
+      if (!payload) return;
+
+      if (editingId) {
+        state.items = state.items.map(item => item.id === editingId ? { ...item, ...payload } : item);
+      } else {
+        state.items.push({ id: crypto.randomUUID(), ...payload });
+      }
+
+      state.items.sort((a, b) => a.startDate.localeCompare(b.startDate));
+      persist();
+      render();
+      resetForm();
+    }
+
+    function editItem(id) {
+      const item = state.items.find(i => i.id === id);
+      if (!item) return;
+      editingId = id;
+      el.taskName.value = item.task;
+      el.startDate.value = item.startDate;
+      el.duration.value = item.duration;
+      el.durationUnit.value = item.durationUnit;
+      el.owner.value = item.owner;
+      el.notes.value = item.notes || "";
+      el.color.value = item.color;
+      el.saveItemBtn.textContent = "Update item";
+      el.cancelEditBtn.classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function deleteItem(id) {
+      state.items = state.items.filter(item => item.id !== id);
+      if (editingId === id) resetForm();
+      persist();
+      render();
+    }
+
+    function clearAll() {
+      if (!confirm("Clear the entire timeline?")) return;
+      state = { title: el.projectTitle.value.trim(), items: [], presentationMode: false };
+      persist();
+      render();
+      resetForm();
+    }
+
+    function exportData() {
+      const data = JSON.stringify({ ...state, exportedAt: new Date().toISOString() }, null, 2);
+      const blob = new Blob([data], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = (state.title || "timeline").toLowerCase().replace(/[^a-z0-9]+/g, "-") + ".json";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          state = {
+            title: data.title || "",
+            items: Array.isArray(data.items) ? data.items : [],
+            presentationMode: Boolean(data.presentationMode),
+          };
+          persist();
+          render();
+          resetForm();
+        } catch (error) {
+          alert("Could not import that file. Please use a JSON file exported by this app.");
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = "";
+    }
+
+    function loadSample() {
+      state = {
+        title: "New Product Development Timeline",
+        presentationMode: false,
+        items: [
+          {
+            id: crypto.randomUUID(),
+            task: "Concept approval",
+            startDate: "2026-05-01",
+            duration: 1,
+            durationUnit: "weeks",
+            owner: "Brandon",
+            notes: "Finalize scope and success criteria.",
+            color: "#2563eb"
+          },
+          {
+            id: crypto.randomUUID(),
+            task: "Prototype build",
+            startDate: "2026-05-08",
+            duration: 3,
+            durationUnit: "weeks",
+            owner: "Engineering",
+            notes: "Build first presentation-grade prototype.",
+            color: "#7c3aed"
+          },
+          {
+            id: crypto.randomUUID(),
+            task: "Validation testing",
+            startDate: "2026-05-29",
+            duration: 2,
+            durationUnit: "weeks",
+            owner: "QA",
+            notes: "Check readiness and document issues.",
+            color: "#059669"
+          },
+          {
+            id: crypto.randomUUID(),
+            task: "Customer presentation",
+            startDate: "2026-06-15",
+            duration: 1,
+            durationUnit: "weeks",
+            owner: "Sales",
+            notes: "Use PDF export or GitHub Pages link.",
+            color: "#ea580c"
+          }
+        ]
+      };
+      persist();
+      render();
+      resetForm();
+    }
+
+    function render() {
+      state.title = el.projectTitle.value.trim() || state.title || "";
+      el.projectTitle.value = state.title;
+      el.displayTitle.textContent = state.title || "Untitled Timeline";
+      document.body.classList.toggle("presentation", state.presentationMode);
+
+      if (!state.items.length) {
+        el.emptyState.classList.remove("hidden");
+        el.timelineSection.classList.add("hidden");
+        el.summary.innerHTML = "";
+        el.timeline.innerHTML = "";
+        el.itemsList.innerHTML = "";
+        el.legend.innerHTML = "";
+        persist();
+        return;
+      }
+
+      el.emptyState.classList.add("hidden");
+      el.timelineSection.classList.remove("hidden");
+
+      const enriched = state.items.map(item => {
+        const start = parseISODate(item.startDate);
+        const end = addDuration(start, Number(item.duration), item.durationUnit);
+        return { ...item, start, end };
+      }).sort((a, b) => a.start - b.start);
+
+      const minDate = new Date(Math.min(...enriched.map(i => i.start)));
+      const maxDate = new Date(Math.max(...enriched.map(i => i.end)));
+      const totalDays = Math.max(dayDiff(minDate, maxDate) + 1, 1);
+      const cols = clamp(totalDays, 7, 24);
+      const bucketSize = Math.ceil(totalDays / cols);
+
+      const buckets = [];
+      for (let i = 0; i < cols; i++) {
+        const bucketStart = new Date(minDate);
+        bucketStart.setDate(bucketStart.getDate() + i * bucketSize);
+        const bucketEnd = new Date(bucketStart);
+        bucketEnd.setDate(bucketEnd.getDate() + bucketSize - 1);
+        buckets.push({ start: bucketStart, end: bucketEnd });
+      }
+
+      el.timeline.style.setProperty("--cols", cols);
+
+      const header = `
+        <div class="grid-header">
+          <div class="corner">Workstream</div>
+          ${buckets.map(bucket => `<div class="time-cell">${formatBucket(bucket)}</div>`).join("")}
+        </div>
+      `;
+
+      const rows = enriched.map(item => {
+        const startOffset = dayDiff(minDate, item.start);
+        const endOffset = dayDiff(minDate, item.end);
+        const left = (startOffset / totalDays) * 100;
+        const width = ((endOffset - startOffset + 1) / totalDays) * 100;
+
+        return `
+          <div class="timeline-row">
+            <div class="lane-meta">
+              <div class="task-title">${escapeHtml(item.task)}</div>
+              <div class="task-meta">
+                <span><strong>Owner:</strong> ${escapeHtml(item.owner)}</span>
+                <span><strong>Start:</strong> ${formatDate(item.start)}</span>
+                <span><strong>Duration:</strong> ${item.duration} ${item.durationUnit}</span>
+              </div>
+            </div>
+            <div class="bar-lane">
+              ${Array.from({ length: cols }).map(() => `<div class="grid-line"></div>`).join("")}
+              <div class="bar" style="left:${left}%; width:${Math.max(width, 4)}%; background:${item.color};">${escapeHtml(item.task)}</div>
+              ${item.notes ? `<div class="bar-note" style="left:${left}%;">${escapeHtml(item.notes)}</div>` : ""}
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      el.timeline.innerHTML = header + rows;
+
+      el.summary.innerHTML = `
+        <div class="pill">${enriched.length} item${enriched.length === 1 ? "" : "s"}</div>
+        <div class="pill">Starts ${formatDate(minDate)}</div>
+        <div class="pill">Ends ${formatDate(maxDate)}</div>
+      `;
+
+      el.itemsList.innerHTML = enriched.map(item => `
+        <div class="item">
+          <div class="item-head">
+            <div class="item-title">${escapeHtml(item.task)}</div>
+            <div class="actions">
+              <button class="ghost" onclick="editItem('${item.id}')">Edit</button>
+              <button class="danger" onclick="deleteItem('${item.id}')">Delete</button>
+            </div>
+          </div>
+          <div class="item-meta">
+            ${formatDate(item.start)} to ${formatDate(item.end)} · ${item.duration} ${item.durationUnit} · ${escapeHtml(item.owner)}
+          </div>
+          <div>${item.notes ? escapeHtml(item.notes) : '<span class="small">No notes</span>'}</div>
+        </div>
+      `).join("");
+
+      const owners = [...new Set(enriched.map(item => item.owner))];
+      el.legend.innerHTML = owners.map(owner => {
+        const found = enriched.find(item => item.owner === owner);
+        return `<span><i class="swatch" style="background:${found.color}"></i>${escapeHtml(owner)}</span>`;
+      }).join("");
+
+      persist();
+    }
+
+    function formatBucket(bucket) {
+      const sameMonth = bucket.start.getMonth() === bucket.end.getMonth() && bucket.start.getFullYear() === bucket.end.getFullYear();
+      if (sameMonth) {
+        return `${bucket.start.toLocaleString(undefined, { month: "short" })} ${bucket.start.getDate()}–${bucket.end.getDate()}`;
+      }
+      return `${bucket.start.toLocaleString(undefined, { month: "short", day: "numeric" })}–${bucket.end.toLocaleString(undefined, { month: "short", day: "numeric" })}`;
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    el.saveItemBtn.addEventListener("click", saveItem);
+    el.cancelEditBtn.addEventListener("click", resetForm);
+    el.clearAllBtn.addEventListener("click", clearAll);
+    el.exportBtn.addEventListener("click", exportData);
+    el.importBtn.addEventListener("click", () => el.fileInput.click());
+    el.fileInput.addEventListener("change", importData);
+    el.printBtn.addEventListener("click", () => window.print());
+    el.loadSampleBtn.addEventListener("click", loadSample);
+    el.presentationModeBtn.addEventListener("click", () => {
+      state.presentationMode = !state.presentationMode;
+      persist();
+      render();
+    });
+    el.projectTitle.addEventListener("input", render);
+
+    window.editItem = editItem;
+    window.deleteItem = deleteItem;
+
+    render();
+  </script>
+</body>
+</html>
