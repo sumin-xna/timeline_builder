@@ -16,9 +16,13 @@
       --danger: #dc2626;
       --shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
       --radius: 14px;
-      --label-col: 240px;
-      --axis-col-width: 96px;
-      --row-height: 122px;
+
+      --label-col: 260px;
+      --month-col-width: 140px;
+      --row-height: 72px;
+
+      --print-scale: 1;
+      --print-height: auto;
     }
 
     * { box-sizing: border-box; }
@@ -155,7 +159,7 @@
 
     textarea {
       resize: vertical;
-      min-height: 78px;
+      min-height: 84px;
     }
 
     .inline-2 {
@@ -176,20 +180,6 @@
       flex-wrap: wrap;
       gap: 10px;
       margin-top: 14px;
-    }
-
-    .data-box {
-      margin-top: 14px;
-      padding: 12px;
-      background: #f8fafc;
-      border: 1px dashed var(--line);
-      border-radius: 10px;
-    }
-
-    .data-box textarea {
-      min-height: 120px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 0.86rem;
     }
 
     .summary {
@@ -257,8 +247,13 @@
       background: white;
     }
 
+    .timeline-print-stage {
+      width: 100%;
+      overflow: hidden;
+    }
+
     .timeline-inner {
-      min-width: 1000px;
+      min-width: 900px;
     }
 
     .axis-row {
@@ -281,17 +276,16 @@
     }
 
     .axis-grid {
-      position: relative;
       display: grid;
       align-items: stretch;
     }
 
     .axis-cell {
-      padding: 10px 6px 14px;
+      padding: 12px 8px;
       border-right: 1px solid var(--line);
-      min-width: var(--axis-col-width);
+      min-width: var(--month-col-width);
       text-align: center;
-      font-size: 0.78rem;
+      font-size: 0.8rem;
       color: var(--muted);
       background: linear-gradient(to bottom, #fbfcfe, #ffffff);
     }
@@ -299,14 +293,14 @@
     .axis-cell strong {
       display: block;
       color: var(--text);
-      font-size: 0.83rem;
+      font-size: 0.88rem;
       margin-bottom: 4px;
     }
 
     .timeline-row {
       display: grid;
       grid-template-columns: var(--label-col) 1fr;
-      min-height: var(--row-height);
+      height: var(--row-height);
       border-bottom: 1px solid var(--line);
       background: white;
       break-inside: avoid;
@@ -314,13 +308,14 @@
     }
 
     .row-label {
-      padding: 14px 14px;
+      padding: 10px 14px;
       border-right: 1px solid var(--line);
       background: #fcfdff;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 6px;
+      gap: 4px;
+      overflow: hidden;
     }
 
     .row-label .name {
@@ -331,61 +326,48 @@
 
     .row-label .meta {
       color: var(--muted);
-      font-size: 0.83rem;
+      font-size: 0.82rem;
       line-height: 1.3;
     }
 
     .row-track {
       position: relative;
-      min-height: var(--row-height);
-      background-size: var(--axis-col-width) 100%;
+      height: var(--row-height);
+      background-size: var(--month-col-width) 100%;
       background-image: linear-gradient(to right, var(--line) 1px, transparent 1px);
+      overflow: hidden;
     }
 
     .task-bar {
       position: absolute;
-      top: 8px;
-      min-height: calc(var(--row-height) - 16px);
-      border-radius: 14px;
-      padding: 12px 14px;
-      overflow: hidden;
+      top: 6px;
+      bottom: 6px;
+      border-radius: 12px;
+      padding: 8px 12px;
       border: 1px solid rgba(37, 99, 235, 0.16);
       background: linear-gradient(135deg, #3b82f6, #1d4ed8);
       color: white;
       box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22);
       display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      gap: 6px;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
     }
 
     .task-bar.milestone {
       background: linear-gradient(135deg, #0f766e, #0d9488);
       border-color: rgba(13, 148, 136, 0.18);
-      min-width: 150px;
+      min-width: 120px;
     }
 
     .task-title {
       font-weight: 800;
-      font-size: 0.95rem;
-      line-height: 1.25;
+      font-size: 0.92rem;
+      line-height: 1.2;
       white-space: normal;
       overflow-wrap: anywhere;
       word-break: break-word;
-    }
-
-    .task-meta,
-    .task-note {
-      font-size: 0.8rem;
-      line-height: 1.32;
-      opacity: 0.98;
-      white-space: normal;
-      overflow-wrap: anywhere;
-      word-break: break-word;
-    }
-
-    .task-note {
-      opacity: 0.95;
     }
 
     .empty-state {
@@ -473,7 +455,6 @@
       .layout {
         grid-template-columns: 1fr;
       }
-
       .form-panel {
         position: static;
       }
@@ -482,7 +463,7 @@
     @media print {
       @page {
         size: landscape;
-        margin: 0.45in;
+        margin: 0.4in;
       }
 
       body {
@@ -521,11 +502,20 @@
       .timeline-shell {
         overflow: visible;
         border: none;
+        border-radius: 0;
+        background: white;
+      }
+
+      .timeline-print-stage {
+        width: 100%;
+        height: var(--print-height);
+        overflow: visible;
       }
 
       .timeline-inner {
         min-width: 0;
-        width: 100%;
+        transform: scale(var(--print-scale));
+        transform-origin: top left;
       }
 
       .axis-row {
@@ -534,56 +524,47 @@
 
       .axis-cell {
         min-width: 0;
-        padding: 8px 4px 10px;
-        font-size: 0.68rem;
+        padding: 8px 4px;
+        font-size: 0.7rem;
       }
 
       .axis-cell strong {
-        font-size: 0.72rem;
-      }
-
-      .row-label {
-        padding: 10px 10px;
-      }
-
-      .row-label .name {
-        font-size: 0.82rem;
-      }
-
-      .row-label .meta {
-        font-size: 0.72rem;
+        font-size: 0.76rem;
       }
 
       .timeline-row {
-        min-height: 112px;
+        height: 58px;
+      }
+
+      .row-label {
+        padding: 8px 10px;
+      }
+
+      .row-label .name {
+        font-size: 0.8rem;
+      }
+
+      .row-label .meta {
+        font-size: 0.68rem;
       }
 
       .row-track {
-        min-height: 112px;
-        background-size: auto 100%;
+        height: 58px;
       }
 
       .task-bar {
-        min-height: 96px;
-        height: auto;
-        top: 8px;
-        padding: 10px 12px;
-        overflow: hidden;
+        top: 5px;
+        bottom: 5px;
+        padding: 6px 8px;
       }
 
       .task-bar.milestone {
-        min-width: 120px;
+        min-width: 90px;
       }
 
       .task-title {
-        font-size: 0.78rem;
-        line-height: 1.2;
-      }
-
-      .task-meta,
-      .task-note {
-        font-size: 0.68rem;
-        line-height: 1.22;
+        font-size: 0.72rem;
+        line-height: 1.15;
       }
 
       .print-only {
@@ -597,12 +578,11 @@
     <div class="topbar">
       <div class="title-block">
         <h1 id="timelineTitle">Project Timeline</h1>
-        <div class="subtitle">Add tasks or milestones with start date, duration, owner, and notes. Bars scale to actual duration and print cleanly to PDF.</div>
+        <div class="subtitle">Month-based timeline with shareable presentation layout and print-ready item list.</div>
       </div>
       <div class="controls">
         <button onclick="seedDemo()">Load Demo</button>
         <button onclick="clearAll()">Clear All</button>
-        <button onclick="exportData()">Export JSON</button>
         <button onclick="printTimeline()">Print / Save PDF</button>
       </div>
     </div>
@@ -651,7 +631,7 @@
 
           <div class="field">
             <label for="notes">Notes</label>
-            <textarea id="notes" placeholder="Optional notes for handoff, dependencies, talking points, or presentation context"></textarea>
+            <textarea id="notes" placeholder="Optional notes for dependencies, talking points, or presentation context"></textarea>
           </div>
 
           <div class="list-tools">
@@ -662,19 +642,9 @@
 
         <div class="hint">
           Notes:
-          <br />• Bars are taller so the text fits inside.
-          <br />• Full start and end dates are included inside each bar for PDF output.
-          <br />• Printing creates a second page with a full item list.
-        </div>
-
-        <div class="data-box">
-          <div class="field">
-            <label for="importBox">Import JSON</label>
-            <textarea id="importBox" placeholder='Paste exported JSON here, then click "Import JSON"'></textarea>
-          </div>
-          <div class="list-tools">
-            <button onclick="importData()">Import JSON</button>
-          </div>
+          <br>• Timeline columns are by month, not day.
+          <br>• Bars match the row height and only show the task or milestone name.
+          <br>• Printing includes the full timeline on page 1 and the full item list on page 2.
         </div>
       </div>
 
@@ -688,10 +658,12 @@
         <div class="timeline-panel card">
           <h2 class="section-title">Timeline View</h2>
           <div class="timeline-shell">
-            <div class="timeline-inner" id="timelineWrap"></div>
+            <div class="timeline-print-stage" id="timelinePrintStage">
+              <div class="timeline-inner" id="timelineWrap"></div>
+            </div>
           </div>
           <div class="footer-note">
-            The printed PDF includes this timeline on the first page and a separate detailed item list on the next page.
+            Timeline bars are positioned by actual dates, but the visual grid is grouped by month for presentation.
           </div>
         </div>
 
@@ -716,9 +688,9 @@
       summaryPills: document.getElementById("summaryPills"),
       tableWrap: document.getElementById("tableWrap"),
       timelineWrap: document.getElementById("timelineWrap"),
+      timelinePrintStage: document.getElementById("timelinePrintStage"),
       saveBtn: document.getElementById("saveBtn"),
       cancelEditBtn: document.getElementById("cancelEditBtn"),
-      importBox: document.getElementById("importBox"),
       printListSection: document.getElementById("printListSection")
     };
 
@@ -739,10 +711,10 @@
       }).format(date);
     }
 
-    function formatShort(date) {
+    function monthLabel(date) {
       return new Intl.DateTimeFormat("en-US", {
         month: "short",
-        day: "numeric"
+        year: "numeric"
       }).format(date);
     }
 
@@ -757,6 +729,23 @@
       const out = new Date(date);
       out.setDate(out.getDate() + days);
       return out;
+    }
+
+    function startOfMonth(date) {
+      return new Date(date.getFullYear(), date.getMonth(), 1);
+    }
+
+    function endOfMonth(date) {
+      return new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    }
+
+    function addMonths(date, months) {
+      return new Date(date.getFullYear(), date.getMonth() + months, 1);
+    }
+
+    function monthDiffInclusive(startMonth, endMonth) {
+      return (endMonth.getFullYear() - startMonth.getFullYear()) * 12 +
+             (endMonth.getMonth() - startMonth.getMonth()) + 1;
     }
 
     function clamp(n, min, max) {
@@ -879,13 +868,18 @@
     }
 
     function persist() {
-      localStorage.setItem("timelineItemsV3", JSON.stringify(items));
+      localStorage.setItem("timelineItemsV4", JSON.stringify(items));
       localStorage.setItem("timelineProjectName", getProjectName());
     }
 
     function loadPersisted() {
       try {
-        const stored = JSON.parse(localStorage.getItem("timelineItemsV3") || localStorage.getItem("timelineItemsV2") || "[]");
+        const stored = JSON.parse(
+          localStorage.getItem("timelineItemsV4") ||
+          localStorage.getItem("timelineItemsV3") ||
+          localStorage.getItem("timelineItemsV2") ||
+          "[]"
+        );
         if (Array.isArray(stored)) items = stored;
       } catch (_) {
         items = [];
@@ -894,54 +888,8 @@
       syncTitle();
     }
 
-    function exportData() {
-      const payload = {
-        projectName: getProjectName(),
-        items
-      };
-      const text = JSON.stringify(payload, null, 2);
-      const blob = new Blob([text], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "timeline-data.json";
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function importData() {
-      const text = els.importBox.value.trim();
-      if (!text) {
-        alert("Paste JSON first.");
-        return;
-      }
-
-      try {
-        const parsed = JSON.parse(text);
-        if (!Array.isArray(parsed.items)) throw new Error("Missing items array.");
-        items = parsed.items.map(x => ({
-          id: x.id || uid(),
-          name: x.name || "",
-          type: x.type === "milestone" ? "milestone" : "task",
-          owner: x.owner || "",
-          startDate: x.startDate,
-          duration: Math.max(1, Number(x.duration || 1)),
-          notes: x.notes || ""
-        })).filter(x => x.name && x.startDate);
-
-        if (parsed.projectName) {
-          els.projectName.value = parsed.projectName;
-        }
-
-        persist();
-        renderAll();
-        alert("Import complete.");
-      } catch (err) {
-        alert("Invalid JSON. Please check the format.");
-      }
-    }
-
     function printTimeline() {
+      preparePrintScale();
       window.print();
     }
 
@@ -963,7 +911,7 @@
           type: "task",
           owner: "Sumin",
           startDate: "2026-05-06",
-          duration: 10,
+          duration: 24,
           notes: "UI refinement and review cycle"
         },
         {
@@ -971,8 +919,8 @@
           name: "Engineering build",
           type: "task",
           owner: "Alex",
-          startDate: "2026-05-12",
-          duration: 18,
+          startDate: "2026-05-20",
+          duration: 44,
           notes: "Core implementation and QA fixes"
         },
         {
@@ -980,8 +928,8 @@
           name: "Internal testing",
           type: "task",
           owner: "Priya",
-          startDate: "2026-05-24",
-          duration: 8,
+          startDate: "2026-07-01",
+          duration: 22,
           notes: "Bug bash and validation"
         },
         {
@@ -989,7 +937,7 @@
           name: "Launch go/no-go",
           type: "milestone",
           owner: "Leadership",
-          startDate: "2026-06-03",
+          startDate: "2026-07-24",
           duration: 1,
           notes: "Final decision meeting"
         },
@@ -998,8 +946,8 @@
           name: "Customer rollout",
           type: "task",
           owner: "Ops",
-          startDate: "2026-06-04",
-          duration: 14,
+          startDate: "2026-07-25",
+          duration: 35,
           notes: "Phased release and monitoring"
         }
       ];
@@ -1073,30 +1021,40 @@
 
       const minStart = new Date(Math.min(...normItems.map(x => x.start.getTime())));
       const maxEnd = new Date(Math.max(...normItems.map(x => x.end.getTime())));
-      const totalDays = diffDays(minStart, maxEnd) + 1;
 
-      const axisDays = [];
-      for (let i = 0; i < totalDays; i++) {
-        axisDays.push(addDays(minStart, i));
+      const timelineStart = startOfMonth(minStart);
+      const timelineEnd = endOfMonth(maxEnd);
+
+      const totalDays = diffDays(timelineStart, timelineEnd) + 1;
+      const totalMonths = monthDiffInclusive(timelineStart, startOfMonth(maxEnd));
+
+      const monthCells = [];
+      for (let i = 0; i < totalMonths; i++) {
+        const current = addMonths(timelineStart, i);
+        monthCells.push(`
+          <div class="axis-cell">
+            <strong>${escapeHtml(monthLabel(current))}</strong>
+            ${current.toLocaleString("en-US", { month: "long" })}
+          </div>
+        `);
       }
 
       const gridStyle = `
         display:grid;
-        grid-template-columns: repeat(${totalDays}, minmax(var(--axis-col-width), 1fr));
+        grid-template-columns: repeat(${totalMonths}, minmax(var(--month-col-width), 1fr));
       `;
 
-      const axisHtml = axisDays.map(d => `
-        <div class="axis-cell">
-          <strong>${escapeHtml(formatShort(d))}</strong>
-          ${d.getFullYear()}
-        </div>
-      `).join("");
-
       const rowsHtml = normItems.map(item => {
-        const startOffset = diffDays(minStart, item.start);
+        const startOffset = diffDays(timelineStart, item.start);
+        const itemSpan = diffDays(item.start, item.end) + 1;
+
         const leftPercent = (startOffset / totalDays) * 100;
-        const widthPercent = (item.duration / totalDays) * 100;
-        const minimumPercent = item.type === "milestone" ? 10 : 16;
+        const widthPercent = (itemSpan / totalDays) * 100;
+
+        const minimumPercent = item.type === "milestone"
+          ? (0.6 / totalMonths) * 100
+          : (0.9 / totalMonths) * 100;
+
         const safeWidth = clamp(widthPercent, minimumPercent, 100);
         const cls = item.type === "milestone" ? "task-bar milestone" : "task-bar";
 
@@ -1104,22 +1062,15 @@
           <div class="timeline-row">
             <div class="row-label">
               <div class="name">${escapeHtml(item.name)}</div>
-              <div class="meta">
-                ${escapeHtml(item.owner || "No owner")} • ${item.duration} day${item.duration === 1 ? "" : "s"}
-              </div>
+              <div class="meta">${escapeHtml(item.owner || "No owner")} • ${formatDate(item.start)} → ${formatDate(item.end)}</div>
             </div>
             <div class="row-track">
               <div
                 class="${cls}"
                 style="left:${leftPercent}%; width:${safeWidth}%;"
-                title="${escapeHtml(item.name)} | ${formatDate(item.start)} to ${formatDate(item.end)} | ${escapeHtml(item.owner || "No owner")} | ${escapeHtml(item.notes || "")}"
+                title="${escapeHtml(item.name)} | ${formatDate(item.start)} to ${formatDate(item.end)} | ${escapeHtml(item.owner || "No owner")}"
               >
                 <div class="task-title">${escapeHtml(item.name)}</div>
-                <div class="task-meta"><strong>Owner:</strong> ${escapeHtml(item.owner || "No owner")}</div>
-                <div class="task-meta"><strong>Start:</strong> ${escapeHtml(formatDate(item.start))}</div>
-                <div class="task-meta"><strong>End:</strong> ${escapeHtml(formatDate(item.end))}</div>
-                <div class="task-meta"><strong>Duration:</strong> ${item.duration} day${item.duration === 1 ? "" : "s"}</div>
-                <div class="task-note"><strong>Notes:</strong> ${escapeHtml(item.notes || "—")}</div>
               </div>
             </div>
           </div>
@@ -1128,13 +1079,14 @@
 
       els.timelineWrap.innerHTML = `
         <div class="axis-row">
-          <div class="axis-label-cell">Workstream / Owner</div>
-          <div class="axis-grid" style="${gridStyle}">${axisHtml}</div>
+          <div class="axis-label-cell">Task / Owner</div>
+          <div class="axis-grid" style="${gridStyle}">${monthCells.join("")}</div>
         </div>
         ${rowsHtml}
       `;
 
       renderPrintList(normItems);
+      preparePrintScale();
     }
 
     function renderPrintList(normItems) {
@@ -1170,8 +1122,23 @@
       `;
     }
 
+    function preparePrintScale() {
+      const timelineInner = els.timelineWrap;
+      const printStage = els.timelinePrintStage;
+      if (!timelineInner || !printStage || !timelineInner.children.length) return;
+
+      const availableWidth = printStage.clientWidth || printStage.getBoundingClientRect().width;
+      const fullWidth = timelineInner.scrollWidth;
+      const scale = fullWidth > 0 ? Math.min(1, availableWidth / fullWidth) : 1;
+      const scaledHeight = timelineInner.scrollHeight * scale;
+
+      document.documentElement.style.setProperty("--print-scale", String(scale));
+      document.documentElement.style.setProperty("--print-height", `${scaledHeight}px`);
+    }
+
     function renderAll() {
       syncTitle();
+
       const normItems = items
         .map(normalizeItem)
         .sort((a, b) => {
@@ -1186,6 +1153,12 @@
     }
 
     els.projectName.addEventListener("input", renderAll);
+    window.addEventListener("resize", preparePrintScale);
+    window.addEventListener("beforeprint", preparePrintScale);
+    window.addEventListener("afterprint", () => {
+      document.documentElement.style.setProperty("--print-scale", "1");
+      document.documentElement.style.setProperty("--print-height", "auto");
+    });
 
     loadPersisted();
     renderAll();
